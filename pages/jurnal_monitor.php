@@ -9,11 +9,18 @@ checkRole(['mentor']);
 
 $user_id = $_SESSION['user_id'];
 
-// Ambil semua jurnal dari pemagang mentor ini
+// Ambil semua jurnal dari pemagang mentor ini dengan filter
+$filter_query = "";
+if (isset($_GET['filter']) && $_GET['filter'] == 'pending') {
+    $filter_query = " AND j.feedback IS NULL";
+} elseif (isset($_GET['filter']) && $_GET['filter'] == 'reviewed') {
+    $filter_query = " AND j.feedback IS NOT NULL";
+}
+
 $query = "SELECT j.*, u.nama as nama_mahasiswa, u.email as email_mahasiswa 
           FROM jurnal j 
           JOIN users u ON j.user_id = u.id 
-          WHERE j.mentor_id = '$user_id' 
+          WHERE j.mentor_id = '$user_id' $filter_query
           ORDER BY j.tanggal DESC";
 $result = mysqli_query($conn, $query);
 ?>
@@ -52,7 +59,7 @@ $result = mysqli_query($conn, $query);
                                 <th>Mahasiswa</th>
                                 <th>Aktivitas</th>
                                 <th>File</th>
-                                <th>Feedback</th>
+                                <th>Status</th>
                                 <th>Nilai</th>
                                 <th>Aksi</th>
                             </tr>
@@ -81,9 +88,9 @@ $result = mysqli_query($conn, $query);
                                 </td>
                                 <td>
                                     <?php if ($row['feedback']): ?>
-                                        <span class="badge bg-success">Sudah</span>
+                                        <span class="badge bg-success">Sudah Review</span>
                                     <?php else: ?>
-                                        <span class="badge bg-warning text-dark">Belum</span>
+                                        <span class="badge bg-warning text-dark">Belum Review</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
@@ -103,15 +110,15 @@ $result = mysqli_query($conn, $query);
                                 </td>
                             </tr>
                             
-                            <!-- Modal Detail -->
+                            <!-- Modal Detail LENGKAP -->
                             <div class="modal fade" id="detailModal<?= $row['id'] ?>" tabindex="-1">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
-                                        <div class="modal-header">
+                                        <div class="modal-header bg-info text-white">
                                             <h5 class="modal-title">
                                                 <i class="bi bi-eye"></i> Detail Jurnal
                                             </h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                         </div>
                                         <div class="modal-body">
                                             <div class="row mb-3">
@@ -120,11 +127,18 @@ $result = mysqli_query($conn, $query);
                                             </div>
                                             <div class="row mb-3">
                                                 <div class="col-md-3"><strong>Mahasiswa:</strong></div>
-                                                <div class="col-md-9"><?= $row['nama_mahasiswa'] ?></div>
+                                                <div class="col-md-9">
+                                                    <?= $row['nama_mahasiswa'] ?><br>
+                                                    <small class="text-muted"><?= $row['email_mahasiswa'] ?></small>
+                                                </div>
                                             </div>
                                             <div class="row mb-3">
                                                 <div class="col-md-3"><strong>Aktivitas:</strong></div>
-                                                <div class="col-md-9"><?= nl2br($row['aktivitas']) ?></div>
+                                                <div class="col-md-9">
+                                                    <div class="alert alert-light">
+                                                        <?= nl2br(htmlspecialchars($row['aktivitas'])) ?>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <?php if ($row['file_penunjang']): ?>
                                             <div class="row mb-3">
@@ -138,9 +152,9 @@ $result = mysqli_query($conn, $query);
                                             <?php endif; ?>
                                             <?php if ($row['feedback']): ?>
                                             <hr>
-                                            <div class="row mb-3">
-                                                <div class="col-md-3"><strong>Feedback:</strong></div>
-                                                <div class="col-md-9"><?= nl2br($row['feedback']) ?></div>
+                                            <h6 class="text-primary"><i class="bi bi-chat-dots"></i> Feedback Anda:</h6>
+                                            <div class="alert alert-success">
+                                                <?= nl2br(htmlspecialchars($row['feedback'])) ?>
                                             </div>
                                             <div class="row mb-3">
                                                 <div class="col-md-3"><strong>Nilai:</strong></div>
@@ -148,24 +162,32 @@ $result = mysqli_query($conn, $query);
                                                     <?= $row['nilai'] ? '<span class="badge bg-primary fs-6">' . $row['nilai'] . '</span>' : '<span class="text-muted">Belum dinilai</span>' ?>
                                                 </div>
                                             </div>
+                                            <?php else: ?>
+                                            <hr>
+                                            <div class="alert alert-warning">
+                                                <i class="bi bi-info-circle"></i> Anda belum memberikan feedback untuk jurnal ini
+                                            </div>
                                             <?php endif; ?>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#feedbackModal<?= $row['id'] ?>">
+                                                <i class="bi bi-chat-dots"></i> Berikan Feedback
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <!-- Modal Feedback -->
+                            <!-- Modal Feedback LENGKAP -->
                             <div class="modal fade" id="feedbackModal<?= $row['id'] ?>" tabindex="-1">
-                                <div class="modal-dialog">
+                                <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
-                                        <div class="modal-header">
+                                        <div class="modal-header bg-primary text-white">
                                             <h5 class="modal-title">
                                                 <i class="bi bi-chat-dots"></i> Berikan Feedback & Nilai
                                             </h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                         </div>
                                         <form method="POST" action="../process/jurnal_process.php">
                                             <div class="modal-body">
@@ -178,18 +200,27 @@ $result = mysqli_query($conn, $query);
                                                 </div>
                                                 
                                                 <div class="mb-3">
-                                                    <label for="feedback<?= $row['id'] ?>" class="form-label">Feedback</label>
-                                                    <textarea class="form-control" id="feedback<?= $row['id'] ?>" name="feedback" rows="4" required><?= $row['feedback'] ?></textarea>
+                                                    <label class="form-label"><strong>Aktivitas Mahasiswa:</strong></label>
+                                                    <div class="alert alert-light">
+                                                        <?= nl2br(htmlspecialchars($row['aktivitas'])) ?>
+                                                    </div>
                                                 </div>
                                                 
                                                 <div class="mb-3">
-                                                    <label for="nilai<?= $row['id'] ?>" class="form-label">Nilai (0-100)</label>
-                                                    <input type="number" class="form-control" id="nilai<?= $row['id'] ?>" name="nilai" min="0" max="100" step="0.1" value="<?= $row['nilai'] ?>">
+                                                    <label for="feedback<?= $row['id'] ?>" class="form-label"><strong>Feedback Anda:</strong></label>
+                                                    <textarea class="form-control" id="feedback<?= $row['id'] ?>" name="feedback" rows="5" required placeholder="Berikan feedback konstruktif untuk mahasiswa..."><?= htmlspecialchars($row['feedback']) ?></textarea>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label for="nilai<?= $row['id'] ?>" class="form-label"><strong>Nilai (0-100):</strong></label>
+                                                    <input type="number" class="form-control" id="nilai<?= $row['id'] ?>" name="nilai" min="0" max="100" step="0.1" value="<?= $row['nilai'] ?>" placeholder="Masukkan nilai">
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                                <button type="submit" class="btn btn-primary">Simpan Feedback</button>
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="bi bi-save"></i> Simpan Feedback
+                                                </button>
                                             </div>
                                         </form>
                                     </div>
@@ -203,7 +234,12 @@ $result = mysqli_query($conn, $query);
         </div>
     <?php else: ?>
         <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Belum ada jurnal dari pemagang Anda.
+            <i class="bi bi-info-circle"></i> Belum ada jurnal dari pemagang Anda
+            <?php if (isset($_GET['filter']) && $_GET['filter'] != 'all'): ?>
+                dengan filter yang dipilih.
+            <?php else: ?>
+                .
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 </div>

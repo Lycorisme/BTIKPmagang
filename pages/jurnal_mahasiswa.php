@@ -99,14 +99,18 @@ $result_jurnal = mysqli_query($conn, $query_jurnal);
                                 <th>File</th>
                                 <th>Feedback</th>
                                 <th>Nilai</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php while ($row = mysqli_fetch_assoc($result_jurnal)): ?>
+                            <?php 
+                            mysqli_data_seek($result_jurnal, 0);
+                            while ($row = mysqli_fetch_assoc($result_jurnal)): 
+                            ?>
                             <tr>
                                 <td><?= date('d/m/Y', strtotime($row['tanggal'])) ?></td>
                                 <td><?= $row['nama_mentor'] ?></td>
-                                <td><?= substr($row['aktivitas'], 0, 100) ?>...</td>
+                                <td><?= substr($row['aktivitas'], 0, 80) ?>...</td>
                                 <td>
                                     <?php if ($row['file_penunjang']): ?>
                                         <a href="../assets/uploads/<?= $row['file_penunjang'] ?>" target="_blank" class="btn btn-sm btn-outline-primary">
@@ -118,9 +122,7 @@ $result_jurnal = mysqli_query($conn, $query_jurnal);
                                 </td>
                                 <td>
                                     <?php if ($row['feedback']): ?>
-                                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#feedbackModal<?= $row['id'] ?>">
-                                            <i class="bi bi-chat-dots"></i> Lihat
-                                        </button>
+                                        <span class="badge bg-success">Sudah</span>
                                     <?php else: ?>
                                         <span class="badge bg-secondary">Belum ada</span>
                                     <?php endif; ?>
@@ -132,28 +134,65 @@ $result_jurnal = mysqli_query($conn, $query_jurnal);
                                         <span class="badge bg-secondary">-</span>
                                     <?php endif; ?>
                                 </td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detailModal<?= $row['id'] ?>">
+                                        <i class="bi bi-eye"></i> Detail
+                                    </button>
+                                </td>
                             </tr>
                             
-                            <!-- Modal Feedback -->
-                            <?php if ($row['feedback']): ?>
-                            <div class="modal fade" id="feedbackModal<?= $row['id'] ?>" tabindex="-1">
-                                <div class="modal-dialog">
+                            <!-- Modal Detail LENGKAP -->
+                            <div class="modal fade" id="detailModal<?= $row['id'] ?>" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
-                                        <div class="modal-header">
+                                        <div class="modal-header bg-info text-white">
                                             <h5 class="modal-title">
-                                                <i class="bi bi-chat-dots"></i> Feedback Mentor
+                                                <i class="bi bi-journal-text"></i> Detail Jurnal
                                             </h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <p><strong>Tanggal:</strong> <?= date('d F Y', strtotime($row['tanggal'])) ?></p>
-                                            <p><strong>Mentor:</strong> <?= $row['nama_mentor'] ?></p>
-                                            <p><strong>Nilai:</strong> 
-                                                <?= $row['nilai'] ? '<span class="badge bg-success">' . $row['nilai'] . '</span>' : '<span class="badge bg-secondary">Belum dinilai</span>' ?>
-                                            </p>
+                                            <div class="row mb-3">
+                                                <div class="col-md-3"><strong>Tanggal:</strong></div>
+                                                <div class="col-md-9"><?= date('d F Y', strtotime($row['tanggal'])) ?></div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-md-3"><strong>Mentor:</strong></div>
+                                                <div class="col-md-9"><?= $row['nama_mentor'] ?></div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-md-3"><strong>Aktivitas:</strong></div>
+                                                <div class="col-md-9"><?= nl2br(htmlspecialchars($row['aktivitas'])) ?></div>
+                                            </div>
+                                            <?php if ($row['file_penunjang']): ?>
+                                            <div class="row mb-3">
+                                                <div class="col-md-3"><strong>File Pendukung:</strong></div>
+                                                <div class="col-md-9">
+                                                    <a href="../assets/uploads/<?= $row['file_penunjang'] ?>" target="_blank" class="btn btn-sm btn-primary">
+                                                        <i class="bi bi-download"></i> Download File
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <?php endif; ?>
+                                            
+                                            <?php if ($row['feedback']): ?>
                                             <hr>
-                                            <p><strong>Feedback:</strong></p>
-                                            <p><?= nl2br($row['feedback']) ?></p>
+                                            <h6 class="text-primary"><i class="bi bi-chat-dots"></i> Feedback Mentor:</h6>
+                                            <div class="alert alert-light">
+                                                <?= nl2br(htmlspecialchars($row['feedback'])) ?>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-md-3"><strong>Nilai:</strong></div>
+                                                <div class="col-md-9">
+                                                    <?= $row['nilai'] ? '<span class="badge bg-success fs-6">' . $row['nilai'] . '</span>' : '<span class="text-muted">Belum dinilai</span>' ?>
+                                                </div>
+                                            </div>
+                                            <?php else: ?>
+                                            <hr>
+                                            <div class="alert alert-warning">
+                                                <i class="bi bi-info-circle"></i> Belum ada feedback dari mentor
+                                            </div>
+                                            <?php endif; ?>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -161,7 +200,6 @@ $result_jurnal = mysqli_query($conn, $query_jurnal);
                                     </div>
                                 </div>
                             </div>
-                            <?php endif; ?>
                             <?php endwhile; ?>
                         </tbody>
                     </table>

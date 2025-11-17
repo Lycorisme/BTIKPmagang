@@ -421,4 +421,58 @@ if ($action == 'change_password') {
         </script>";
     }
 }
+
+// UPDATE PROFILE ADMIN (untuk admin edit profil sendiri)
+if ($action == 'update_profile_admin') {
+    $user_id = $_POST['user_id'];
+    $nama = mysqli_real_escape_string($conn, $_POST['nama']);
+    $email = mysqli_real_escape_string($conn, $_POST['email']);
+    
+    // Cek apakah email sudah digunakan user lain
+    $check_email = "SELECT id FROM users WHERE email = '$email' AND id != '$user_id'";
+    $result_check = mysqli_query($conn, $check_email);
+    
+    if (mysqli_num_rows($result_check) > 0) {
+        echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: 'Email sudah digunakan oleh user lain'
+            }).then(() => {
+                window.history.back();
+            });
+        </script>";
+        exit();
+    }
+    
+    $query = "UPDATE users SET nama = '$nama', email = '$email' WHERE id = '$user_id'";
+    
+    if (mysqli_query($conn, $query)) {
+        $_SESSION['nama'] = $nama;
+        $_SESSION['email'] = $email;
+        
+        echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'Profil berhasil diupdate'
+            }).then(() => {
+                window.location.href = '../pages/profile_admin.php';
+            });
+        </script>";
+    } else {
+        echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: 'Terjadi kesalahan saat mengupdate profil'
+            }).then(() => {
+                window.history.back();
+            });
+        </script>";
+    }
+}
 ?>
