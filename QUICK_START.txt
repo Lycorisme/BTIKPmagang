@@ -1,0 +1,184 @@
+==========================================
+   SISTEM MANAJEMEN MAGANG
+   PANDUAN INSTALASI CEPAT
+==========================================
+
+📋 PRASYARAT:
+- XAMPP / WAMP / LAMP sudah terinstall
+- Browser (Chrome/Firefox/Edge)
+
+⚡ INSTALASI CEPAT (5 MENIT):
+
+1. EKSTRAK PROJECT
+   - Ekstrak folder ke: C:\xampp\htdocs\magang-app (Windows)
+                    atau: /var/www/html/magang-app (Linux)
+
+2. BUAT DATABASE
+   - Buka phpMyAdmin: http://localhost/phpmyadmin
+   - Buat database baru: "magang_db"
+   - Import file SQL (jalankan query ini):
+
+   -------- COPY MULAI DARI SINI --------
+   CREATE DATABASE IF NOT EXISTS magang_db;
+   USE magang_db;
+
+   CREATE TABLE users (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       nama VARCHAR(100) NOT NULL,
+       email VARCHAR(100) NOT NULL UNIQUE,
+       password VARCHAR(255) NOT NULL,
+       role ENUM('mahasiswa', 'mentor', 'admin') NOT NULL,
+       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+   );
+
+   CREATE TABLE mentors (
+       user_id INT PRIMARY KEY,
+       keahlian VARCHAR(255) NOT NULL,
+       bio TEXT,
+       status_open BOOLEAN DEFAULT 1,
+       foto VARCHAR(255),
+       FOREIGN KEY (user_id) REFERENCES users(id)
+   );
+
+   CREATE TABLE lowongan (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       judul VARCHAR(255) NOT NULL,
+       deskripsi TEXT,
+       mentor_id INT NOT NULL,
+       tgl_mulai DATE,
+       tgl_selesai DATE,
+       status ENUM('open', 'closed') DEFAULT 'open',
+       FOREIGN KEY (mentor_id) REFERENCES mentors(user_id)
+   );
+
+   CREATE TABLE lamaran (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       user_id INT NOT NULL,
+       lowongan_id INT NOT NULL,
+       mentor_id INT NOT NULL,
+       tgl_melamar DATE NOT NULL,
+       status ENUM('proses', 'diterima', 'ditolak') DEFAULT 'proses',
+       file_cv VARCHAR(255),
+       FOREIGN KEY (user_id) REFERENCES users(id),
+       FOREIGN KEY (lowongan_id) REFERENCES lowongan(id),
+       FOREIGN KEY (mentor_id) REFERENCES mentors(user_id)
+   );
+
+   CREATE TABLE jurnal (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       user_id INT NOT NULL,
+       mentor_id INT NOT NULL,
+       tanggal DATE NOT NULL,
+       aktivitas TEXT,
+       file_penunjang VARCHAR(255),
+       feedback TEXT,
+       nilai FLOAT,
+       FOREIGN KEY (user_id) REFERENCES users(id),
+       FOREIGN KEY (mentor_id) REFERENCES mentors(user_id)
+   );
+   -------- COPY SAMPAI SINI --------
+
+3. INSERT DATA DUMMY (OPSIONAL)
+   - Di phpMyAdmin, jalankan script: insert_data_dummy.sql
+   - Atau skip jika ingin input data manual
+
+4. SETUP FOLDER UPLOADS
+   - Buka browser: http://localhost/magang-app/setup.php
+   - Ikuti instruksi di halaman setup
+   - Pastikan semua checklist hijau ✅
+
+5. AKSES WEBSITE
+   - Buka: http://localhost/magang-app
+   - Done! 🎉
+
+==========================================
+
+🔐 LOGIN DEFAULT (jika sudah insert data dummy):
+
+ADMIN:
+- Email: admin@magang.com
+- Password: admin123
+
+MENTOR:
+- Email: budi@mentor.com
+- Password: mentor123
+
+MAHASISWA:
+- Email: andi@mahasiswa.com
+- Password: mahasiswa123
+
+==========================================
+
+📁 STRUKTUR FOLDER PENTING:
+
+magang-app/
+├── config/database.php        ← Koneksi DB
+├── pages/                      ← Semua halaman
+├── process/                    ← Proses backend
+├── assets/uploads/             ← Upload files (harus writable!)
+└── index.php                   ← Entry point
+
+==========================================
+
+⚠️ TROUBLESHOOTING:
+
+MASALAH: "Error connecting to database"
+SOLUSI: Cek config/database.php, sesuaikan username/password MySQL
+
+MASALAH: "Upload file gagal"
+SOLUSI: chmod 777 assets/uploads (Linux) atau pastikan folder writable
+
+MASALAH: "SweetAlert tidak muncul"
+SOLUSI: Cek koneksi internet (menggunakan CDN)
+
+MASALAH: "Page not found"
+SOLUSI: Pastikan mod_rewrite aktif di Apache
+
+==========================================
+
+📝 CATATAN PENTING:
+
+✅ Password TIDAK di-hash (untuk kemudahan development)
+✅ Gunakan password_hash() untuk production
+✅ File upload max 2MB (bisa diubah di .htaccess)
+✅ Hapus file setup.php setelah instalasi
+✅ Backup database secara berkala
+
+==========================================
+
+🎯 FITUR UTAMA:
+
+MAHASISWA:
+- Cari & Lamar Lowongan
+- Upload CV (PDF)
+- Tracking Status Lamaran
+- Input Jurnal Harian
+- Download Sertifikat
+
+MENTOR:
+- Approve/Reject Lamaran
+- Monitor Jurnal Pemagang
+- Berikan Feedback & Nilai
+- Kelola Profil
+
+ADMIN:
+- CRUD Master Data
+- 5 Jenis Laporan
+- Monitor Semua Aktivitas
+
+==========================================
+
+📞 SUPPORT:
+
+Jika ada pertanyaan atau bug:
+- Cek README.md untuk dokumentasi lengkap
+- Pastikan sudah ikuti semua langkah dengan benar
+- Test di browser yang berbeda
+
+==========================================
+
+🚀 HAPPY CODING!
+
+Versi: 1.0
+Dibuat dengan: PHP Native + Bootstrap + SweetAlert
+==========================================
