@@ -20,29 +20,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['email'] = $user['email'];
         $_SESSION['role'] = $user['role'];
         
-        echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
-        echo "<script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Login Berhasil!',
-                text: 'Selamat datang " . $user['nama'] . "',
-                showConfirmButton: false,
-                timer: 1500
-            }).then(() => {
-                window.location.href = '../pages/dashboard_" . $user['role'] . ".php';
-            });
-        </script>";
+        // Redirect langsung tanpa SweetAlert
+        header("Location: ../pages/dashboard_" . $user['role'] . ".php");
+        exit();
     } else {
-        echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
-        echo "<script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Login Gagal!',
-                text: 'Email, password, atau role tidak sesuai'
-            }).then(() => {
-                window.location.href = '../pages/login.php';
-            });
-        </script>";
+        // Login gagal - tampilkan SweetAlert
+        ?>
+        <!DOCTYPE html>
+        <html lang="id">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Login Gagal</title>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Gagal!',
+                    text: 'Email, password, atau role tidak sesuai',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = '../pages/login.php';
+                });
+            </script>
+        </body>
+        </html>
+        <?php
+        exit();
     }
+} else {
+    header('Location: ../pages/login.php');
+    exit();
 }
 ?>

@@ -11,16 +11,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Validasi password
     if ($password !== $confirm_password) {
-        echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
-        echo "<script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Registrasi Gagal!',
-                text: 'Password dan konfirmasi password tidak cocok'
-            }).then(() => {
-                window.location.href = '../pages/register.php';
-            });
-        </script>";
+        ?>
+        <!DOCTYPE html>
+        <html lang="id">
+        <head>
+            <meta charset="UTF-8">
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Registrasi Gagal!',
+                    text: 'Password dan konfirmasi password tidak cocok',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = '../pages/register.php';
+                });
+            </script>
+        </body>
+        </html>
+        <?php
         exit();
     }
     
@@ -29,16 +40,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $check_result = mysqli_query($conn, $check_query);
     
     if (mysqli_num_rows($check_result) > 0) {
-        echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
-        echo "<script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Registrasi Gagal!',
-                text: 'Email sudah terdaftar'
-            }).then(() => {
-                window.location.href = '../pages/register.php';
-            });
-        </script>";
+        ?>
+        <!DOCTYPE html>
+        <html lang="id">
+        <head>
+            <meta charset="UTF-8">
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Registrasi Gagal!',
+                    text: 'Email sudah terdaftar',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = '../pages/register.php';
+                });
+            </script>
+        </body>
+        </html>
+        <?php
         exit();
     }
     
@@ -58,27 +80,53 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             mysqli_query($conn, $mentor_query);
         }
         
-        echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
-        echo "<script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Registrasi Berhasil!',
-                text: 'Silakan login dengan akun Anda'
-            }).then(() => {
-                window.location.href = '../pages/login.php';
-            });
-        </script>";
+        ?>
+        <!DOCTYPE html>
+        <html lang="id">
+        <head>
+            <meta charset="UTF-8">
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Registrasi Berhasil!',
+                    text: 'Silakan login dengan akun Anda',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = '../pages/login.php';
+                });
+            </script>
+        </body>
+        </html>
+        <?php
     } else {
-        echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
-        echo "<script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Registrasi Gagal!',
-                text: 'Terjadi kesalahan sistem'
-            }).then(() => {
-                window.location.href = '../pages/register.php';
-            });
-        </script>";
+        ?>
+        <!DOCTYPE html>
+        <html lang="id">
+        <head>
+            <meta charset="UTF-8">
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Registrasi Gagal!',
+                    text: 'Terjadi kesalahan sistem',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = '../pages/register.php';
+                });
+            </script>
+        </body>
+        </html>
+        <?php
     }
+    exit();
+} else {
+    header('Location: ../pages/register.php');
+    exit();
 }
 ?>

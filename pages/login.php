@@ -1,8 +1,14 @@
 <?php 
 session_start();
-include '../includes/header.php'; 
-include '../includes/auth.php';
-redirectIfLoggedIn();
+
+// Redirect jika sudah login
+if (isset($_SESSION['user_id'])) {
+    $role = $_SESSION['role'];
+    header("Location: dashboard_$role.php");
+    exit();
+}
+
+include '../includes/header.php';
 ?>
 
 <div class="container my-5">
