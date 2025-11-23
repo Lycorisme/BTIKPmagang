@@ -1,0 +1,250 @@
+/**
+ * MODAL Z-INDEX FIX
+ * Pastikan modal selalu di atas backdrop
+ * Include setelah Bootstrap CSS
+ */
+
+/* === CRITICAL FIXES === */
+
+/* Modal backdrop z-index */
+.modal-backdrop {
+  z-index: 1050 !important;
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Modal container z-index */
+.modal {
+  z-index: 1055 !important;
+  display: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Modal dialog z-index */
+.modal-dialog {
+  z-index: 1056 !important;
+  position: relative;
+  pointer-events: auto;
+}
+
+/* Modal content z-index */
+.modal-content {
+  z-index: 1057 !important;
+  position: relative;
+  pointer-events: auto;
+  background-color: #fff;
+}
+
+/* Semua elemen dalam modal */
+.modal-header,
+.modal-body,
+.modal-footer {
+  z-index: 1058;
+  position: relative;
+}
+
+/* Button close */
+.modal-header .btn-close {
+  z-index: 1059;
+  position: relative;
+}
+
+/* === MODAL SHOW STATE === */
+
+/* Ketika modal ditampilkan */
+.modal.show {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  z-index: 1055 !important;
+}
+
+/* Backdrop ketika ditampilkan */
+.modal-backdrop.show {
+  opacity: 1;
+  z-index: 1050 !important;
+}
+
+/* === MULTIPLE MODALS === */
+
+/* Support untuk nested/multiple modals */
+.modal-backdrop.show ~ .modal-backdrop.show {
+  z-index: 1060 !important;
+}
+
+.modal.show ~ .modal.show {
+  z-index: 1065 !important;
+}
+
+/* Modal kedua dan seterusnya */
+.modal:nth-of-type(2) {
+  z-index: 1065 !important;
+}
+
+.modal-backdrop:nth-of-type(2) {
+  z-index: 1060 !important;
+}
+
+/* === BODY SCROLLING === */
+
+/* Prevent body scroll saat modal open */
+body.modal-open {
+  overflow: hidden !important;
+  padding-right: 0 !important;
+  position: relative;
+}
+
+/* Fix untuk iOS */
+@supports (-webkit-overflow-scrolling: touch) {
+  body.modal-open {
+    position: fixed;
+    width: 100%;
+  }
+}
+
+/* === FADE ANIMATION FIX === */
+
+/* Pastikan animasi tidak mengganggu z-index */
+.modal.fade .modal-dialog {
+  transition: transform 0.3s ease-out;
+  transform: translate(0, -50px);
+}
+
+.modal.show .modal-dialog {
+  transform: none;
+}
+
+/* === RESPONSIVE FIXES === */
+
+@media (max-width: 576px) {
+  .modal-dialog {
+    margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+  }
+  
+  .modal.show {
+    padding-right: 0 !important;
+  }
+}
+
+/* === ACCESSIBILITY === */
+
+/* Focus trap untuk keyboard navigation */
+.modal {
+  outline: 0;
+}
+
+.modal-dialog {
+  outline: 0;
+}
+
+/* === DEBUG HELPERS === */
+
+/* Uncomment untuk debugging z-index issues */
+/*
+.modal-backdrop {
+  border: 3px solid red !important;
+}
+
+.modal {
+  border: 3px solid blue !important;
+}
+
+.modal-dialog {
+  border: 3px solid green !important;
+}
+
+.modal-content {
+  border: 3px solid yellow !important;
+}
+*/
+
+/* === SPECIFIC MODAL STYLES === */
+
+/* Konfirmasi modal */
+.modal-dialog[class*="modal-sm"] {
+  max-width: 400px;
+}
+
+/* Large modal */
+.modal-dialog[class*="modal-lg"] {
+  max-width: 800px;
+}
+
+/* Extra large modal */
+.modal-dialog[class*="modal-xl"] {
+  max-width: 1140px;
+}
+
+/* Fullscreen modal */
+.modal-fullscreen {
+  width: 100vw;
+  max-width: none;
+  height: 100%;
+  margin: 0;
+}
+
+.modal-fullscreen .modal-content {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+/* === SWAL COMPATIBILITY === */
+
+/* Jika menggunakan SweetAlert2 bersamaan dengan Bootstrap Modal */
+.swal2-container {
+  z-index: 9999 !important;
+}
+
+.swal2-container ~ .modal-backdrop {
+  z-index: 9998 !important;
+}
+
+/* === PERFORMANCE OPTIMIZATION === */
+
+/* Hardware acceleration */
+.modal,
+.modal-backdrop,
+.modal-dialog,
+.modal-content {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* === CUSTOM ANIMATIONS === */
+
+/* Smooth fade-in animation */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal.show .modal-content {
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+/* Backdrop fade */
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-backdrop.show {
+  animation: backdropFadeIn 0.15s ease-out;
+}
