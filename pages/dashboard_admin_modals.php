@@ -1,33 +1,106 @@
 <!-- File ini berisi semua modal untuk dashboard admin -->
 <!-- Letakkan sebelum closing tag body di dashboard_admin.php -->
 
-<!-- ========== MODAL MAHASISWA ========== -->
+<!-- ========== MODAL TAMBAH USER UNIVERSAL ========== -->
 
-<!-- Modal Tambah Mahasiswa -->
-<div class="modal fade" id="addMahasiswaModal" tabindex="-1">
-    <div class="modal-dialog">
+<!-- Modal Tambah User (dengan pilihan role) -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Tambah Mahasiswa</h5>
+                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Tambah User Baru</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="../process/admin_process.php">
                 <div class="modal-body">
-                    <input type="hidden" name="action" value="create_mahasiswa">
+                    <input type="hidden" name="action" value="create_user">
                     
                     <div class="mb-3">
-                        <label for="nama_mhs" class="form-label">Nama Lengkap</label>
-                        <input type="text" class="form-control" id="nama_mhs" name="nama" required>
+                        <label for="role_user" class="form-label">Role User <span class="text-danger">*</span></label>
+                        <select class="form-select" id="role_user" name="role" required onchange="toggleRoleFields()">
+                            <option value="">Pilih Role</option>
+                            <option value="admin">Admin</option>
+                            <option value="peserta_magang">Peserta Magang</option>
+                            <option value="mentor">Mentor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nama_user" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="nama_user" name="nama" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="email_user" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email_user" name="email" required>
+                        </div>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="email_mhs" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email_mhs" name="email" required>
+                        <label for="password_user" class="form-label">Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password_user" name="password" required>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="password_mhs" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password_mhs" name="password" required>
+                    <!-- Field khusus untuk Mentor -->
+                    <div id="mentorFieldsAdd" style="display: none;">
+                        <hr>
+                        <h6 class="text-success"><i class="bi bi-person-badge"></i> Data Mentor</h6>
+                        <div class="mb-3">
+                            <label for="keahlian_user" class="form-label">Keahlian</label>
+                            <input type="text" class="form-control" id="keahlian_user" name="keahlian" placeholder="contoh: Web Development, Mobile App, Data Science">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="bio_user" class="form-label">Bio/Deskripsi</label>
+                            <textarea class="form-control" id="bio_user" name="bio" rows="3" placeholder="Ceritakan tentang pengalaman dan keahlian"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Field khusus untuk Peserta Magang -->
+                    <div id="pesertaFieldsAdd" style="display: none;">
+                        <hr>
+                        <h6 class="text-primary"><i class="bi bi-person"></i> Data Peserta Magang</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">No. HP</label>
+                                <input type="tel" class="form-control" name="no_hp" placeholder="08123456789">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Jenis Kelamin</label>
+                                <select class="form-select" name="jenis_kelamin">
+                                    <option value="">Pilih</option>
+                                    <option value="L">Laki-laki</option>
+                                    <option value="P">Perempuan</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Jenis Instansi</label>
+                                <select class="form-select" name="jenis_instansi">
+                                    <option value="">Pilih</option>
+                                    <option value="SMK">SMK</option>
+                                    <option value="Universitas">Universitas</option>
+                                    <option value="Politeknik">Politeknik</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nama Instansi</label>
+                                <input type="text" class="form-control" name="nama_instansi" placeholder="Nama sekolah/kampus">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Jurusan</label>
+                                <input type="text" class="form-control" name="jurusan" placeholder="Jurusan/Prodi">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">NIM/NIS</label>
+                                <input type="text" class="form-control" name="nim_nis" placeholder="NIM atau NIS">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -39,22 +112,40 @@
     </div>
 </div>
 
+<script>
+function toggleRoleFields() {
+    const role = document.getElementById('role_user').value;
+    const mentorFields = document.getElementById('mentorFieldsAdd');
+    const pesertaFields = document.getElementById('pesertaFieldsAdd');
+    
+    mentorFields.style.display = role === 'mentor' ? 'block' : 'none';
+    pesertaFields.style.display = role === 'peserta_magang' ? 'block' : 'none';
+    
+    // Toggle required untuk mentor fields
+    document.getElementById('keahlian_user').required = role === 'mentor';
+    document.getElementById('bio_user').required = role === 'mentor';
+}
+</script>
+
+<!-- ========== MODAL PESERTA MAGANG ========== -->
+
 <?php 
-// Reset pointer untuk modal edit/delete mahasiswa
-mysqli_data_seek($result_mahasiswa, 0);
-while ($row = mysqli_fetch_assoc($result_mahasiswa)): 
+// Reset pointer untuk modal edit/delete peserta magang
+if (isset($result_peserta)) {
+    mysqli_data_seek($result_peserta, 0);
+    while ($row = mysqli_fetch_assoc($result_peserta)): 
 ?>
-<!-- Modal Edit Mahasiswa -->
-<div class="modal fade" id="editMahasiswaModal<?= $row['id'] ?>" tabindex="-1">
+<!-- Modal Edit Peserta Magang -->
+<div class="modal fade" id="editPesertaModal<?= $row['id'] ?>" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-pencil"></i> Edit Mahasiswa</h5>
+                <h5 class="modal-title"><i class="bi bi-pencil"></i> Edit Peserta Magang</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="../process/admin_process.php">
                 <div class="modal-body">
-                    <input type="hidden" name="action" value="update_mahasiswa">
+                    <input type="hidden" name="action" value="update_peserta_magang">
                     <input type="hidden" name="user_id" value="<?= $row['id'] ?>">
                     
                     <div class="mb-3">
@@ -76,19 +167,19 @@ while ($row = mysqli_fetch_assoc($result_mahasiswa)):
     </div>
 </div>
 
-<!-- Modal Delete Mahasiswa -->
-<div class="modal fade" id="deleteMahasiswaModal<?= $row['id'] ?>" tabindex="-1">
+<!-- Modal Delete Peserta Magang -->
+<div class="modal fade" id="deletePesertaModal<?= $row['id'] ?>" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-trash"></i> Hapus Mahasiswa</h5>
+                <h5 class="modal-title"><i class="bi bi-trash"></i> Hapus Peserta Magang</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="../process/admin_process.php">
                 <div class="modal-body">
-                    <input type="hidden" name="action" value="delete_mahasiswa">
+                    <input type="hidden" name="action" value="delete_peserta_magang">
                     <input type="hidden" name="user_id" value="<?= $row['id'] ?>">
-                    <p>Apakah Anda yakin ingin menghapus mahasiswa <strong><?= $row['nama'] ?></strong>?</p>
+                    <p>Apakah Anda yakin ingin menghapus peserta magang <strong><?= $row['nama'] ?></strong>?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -98,7 +189,10 @@ while ($row = mysqli_fetch_assoc($result_mahasiswa)):
         </div>
     </div>
 </div>
-<?php endwhile; ?>
+<?php 
+    endwhile;
+}
+?>
 
 <!-- ========== MODAL MENTOR ========== -->
 
@@ -149,8 +243,9 @@ while ($row = mysqli_fetch_assoc($result_mahasiswa)):
 </div>
 
 <?php 
-mysqli_data_seek($result_mentor, 0);
-while ($row = mysqli_fetch_assoc($result_mentor)): 
+if (isset($result_mentor)) {
+    mysqli_data_seek($result_mentor, 0);
+    while ($row = mysqli_fetch_assoc($result_mentor)): 
 ?>
 <!-- Modal Edit Mentor -->
 <div class="modal fade" id="editMentorModal<?= $row['id'] ?>" tabindex="-1">
@@ -188,8 +283,8 @@ while ($row = mysqli_fetch_assoc($result_mentor)):
                     <div class="mb-3">
                         <label class="form-label">Status</label>
                         <select class="form-select" name="status_open" required>
-                            <option value="1" <?= $row['status_open'] == 1 ? 'selected' : '' ?>>Menerima Pemagang</option>
-                            <option value="0" <?= $row['status_open'] == 0 ? 'selected' : '' ?>>Tidak Tersedia</option>
+                            <option value="1" <?= $row['status_open'] == 1 ? 'selected' : '' ?>>Aktif</option>
+                            <option value="0" <?= $row['status_open'] == 0 ? 'selected' : '' ?>>Non-Aktif</option>
                         </select>
                     </div>
                 </div>
@@ -224,152 +319,7 @@ while ($row = mysqli_fetch_assoc($result_mentor)):
         </div>
     </div>
 </div>
-<?php endwhile; ?>
-
-<!-- ========== MODAL LOWONGAN ========== -->
-
-<!-- Modal Tambah Lowongan -->
-<div class="modal fade" id="addLowonganModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Tambah Lowongan</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="../process/admin_process.php">
-                <div class="modal-body">
-                    <input type="hidden" name="action" value="create_lowongan">
-                    
-                    <div class="mb-3">
-                        <label for="judul_lowongan" class="form-label">Judul Lowongan</label>
-                        <input type="text" class="form-control" id="judul_lowongan" name="judul" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="deskripsi_lowongan" class="form-label">Deskripsi</label>
-                        <textarea class="form-control" id="deskripsi_lowongan" name="deskripsi" rows="3" required></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="mentor_lowongan" class="form-label">Mentor</label>
-                        <select class="form-select" id="mentor_lowongan" name="mentor_id" required>
-                            <option value="">Pilih Mentor</option>
-                            <?php 
-                            mysqli_data_seek($result_mentor, 0);
-                            while ($m = mysqli_fetch_assoc($result_mentor)): 
-                            ?>
-                                <option value="<?= $m['id'] ?>"><?= $m['nama'] ?> - <?= $m['keahlian'] ?></option>
-                            <?php endwhile; ?>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="tgl_mulai_lowongan" class="form-label">Tanggal Mulai</label>
-                        <input type="date" class="form-control" id="tgl_mulai_lowongan" name="tgl_mulai" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="tgl_selesai_lowongan" class="form-label">Tanggal Selesai</label>
-                        <input type="date" class="form-control" id="tgl_selesai_lowongan" name="tgl_selesai" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <?php 
-mysqli_data_seek($result_lowongan, 0);
-while ($row = mysqli_fetch_assoc($result_lowongan)): 
+    endwhile;
+}
 ?>
-<!-- Modal Edit Lowongan -->
-<div class="modal fade" id="editLowonganModal<?= $row['id'] ?>" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-pencil"></i> Edit Lowongan</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="../process/admin_process.php">
-                <div class="modal-body">
-                    <input type="hidden" name="action" value="update_lowongan">
-                    <input type="hidden" name="lowongan_id" value="<?= $row['id'] ?>">
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Judul Lowongan</label>
-                        <input type="text" class="form-control" name="judul" value="<?= $row['judul'] ?>" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Deskripsi</label>
-                        <textarea class="form-control" name="deskripsi" rows="3" required><?= $row['deskripsi'] ?></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Mentor</label>
-                        <select class="form-select" name="mentor_id" required>
-                            <?php 
-                            mysqli_data_seek($result_mentor, 0);
-                            while ($m = mysqli_fetch_assoc($result_mentor)): 
-                            ?>
-                                <option value="<?= $m['id'] ?>" <?= $m['id'] == $row['mentor_id'] ? 'selected' : '' ?>>
-                                    <?= $m['nama'] ?> - <?= $m['keahlian'] ?>
-                                </option>
-                            <?php endwhile; ?>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Tanggal Mulai</label>
-                        <input type="date" class="form-control" name="tgl_mulai" value="<?= $row['tgl_mulai'] ?>" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Tanggal Selesai</label>
-                        <input type="date" class="form-control" name="tgl_selesai" value="<?= $row['tgl_selesai'] ?>" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select class="form-select" name="status" required>
-                            <option value="open" <?= $row['status'] == 'open' ? 'selected' : '' ?>>Open</option>
-                            <option value="closed" <?= $row['status'] == 'closed' ? 'selected' : '' ?>>Closed</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-warning">Update</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Delete Lowongan -->
-<div class="modal fade" id="deleteLowonganModal<?= $row['id'] ?>" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-trash"></i> Hapus Lowongan</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="../process/admin_process.php">
-                <div class="modal-body">
-                    <input type="hidden" name="action" value="delete_lowongan">
-                    <input type="hidden" name="lowongan_id" value="<?= $row['id'] ?>">
-                    <p>Apakah Anda yakin ingin menghapus lowongan <strong><?= $row['judul'] ?></strong>?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger">Hapus</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-<?php endwhile; ?>

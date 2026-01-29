@@ -8,7 +8,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Magang - BTIKP</title>
+    <title>Sistem Magang/PKL - BTIKP</title>
     
     <!-- Bootstrap CSS via CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -41,29 +41,19 @@ if (session_status() === PHP_SESSION_NONE) {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <?php if (isset($_SESSION['user_id'])): ?>
-                        <?php if ($_SESSION['role'] == 'mahasiswa'): ?>
+                        <?php if ($_SESSION['role'] == 'peserta_magang'): ?>
                             <li class="nav-item">
-                                <a class="nav-link" href="dashboard_mahasiswa.php">
+                                <a class="nav-link" href="dashboard_peserta_magang.php">
                                     <i class="bi bi-speedometer2"></i> Dashboard
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="lowongan_list.php">
-                                    <i class="bi bi-briefcase"></i> Lowongan
+                                <a class="nav-link" href="absensi.php">
+                                    <i class="bi bi-calendar-check"></i> Absensi
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="mentor_list.php">
-                                    <i class="bi bi-people"></i> Mentor
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="lamaran_status.php">
-                                    <i class="bi bi-list-check"></i> Status Lamaran
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="jurnal_mahasiswa.php">
+                                <a class="nav-link" href="jurnal_peserta.php">
                                     <i class="bi bi-journal-text"></i> Jurnal
                                 </a>
                             </li>
@@ -74,8 +64,8 @@ if (session_status() === PHP_SESSION_NONE) {
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="pemagang_list.php">
-                                    <i class="bi bi-people"></i> Pemagang
+                                <a class="nav-link" href="peserta_mentor.php">
+                                    <i class="bi bi-people"></i> Peserta Magang
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -89,25 +79,30 @@ if (session_status() === PHP_SESSION_NONE) {
                                     <i class="bi bi-speedometer2"></i> Dashboard
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="kelola_pendaftaran.php">
+                                    <i class="bi bi-clipboard-check"></i> Pendaftaran
+                                </a>
+                            </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                     <i class="bi bi-file-earmark-bar-graph"></i> Laporan
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="laporan1.php">
-                                        <i class="bi bi-people"></i> Laporan Mahasiswa
+                                        <i class="bi bi-people"></i> Laporan Peserta Magang
                                     </a></li>
                                     <li><a class="dropdown-item" href="laporan2.php">
                                         <i class="bi bi-person-badge"></i> Laporan Mentor
                                     </a></li>
                                     <li><a class="dropdown-item" href="laporan3.php">
-                                        <i class="bi bi-briefcase"></i> Laporan Lowongan
+                                        <i class="bi bi-calendar-check"></i> Laporan Absensi
                                     </a></li>
                                     <li><a class="dropdown-item" href="laporan4.php">
-                                        <i class="bi bi-file-text"></i> Laporan Lamaran
+                                        <i class="bi bi-journal-text"></i> Laporan Jurnal
                                     </a></li>
                                     <li><a class="dropdown-item" href="laporan5.php">
-                                        <i class="bi bi-journal-text"></i> Laporan Jurnal
+                                        <i class="bi bi-award"></i> Laporan Sertifikat
                                     </a></li>
                                 </ul>
                             </li>

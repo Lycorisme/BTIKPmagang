@@ -31,16 +31,6 @@ include '../includes/header.php';
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="role" class="form-label">Login Sebagai</label>
-                            <select class="form-select" id="role" name="role" required>
-                                <option value="">Pilih Role</option>
-                                <option value="mahasiswa">Mahasiswa</option>
-                                <option value="mentor">Mentor</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                        </div>
-                        
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="bi bi-box-arrow-in-right"></i> Login
                         </button>
@@ -49,7 +39,7 @@ include '../includes/header.php';
                     <hr class="my-4">
                     
                     <p class="text-center mb-0">
-                        Belum punya akun? <a href="register.php">Daftar Sekarang</a>
+                        Belum punya akun? <a href="register.php">Daftar sebagai Peserta Magang</a>
                     </p>
                 </div>
             </div>
