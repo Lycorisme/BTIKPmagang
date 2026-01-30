@@ -1,10 +1,18 @@
+<?php
+// Deteksi path relatif untuk assets (jika belum didefinisikan di header)
+if (!isset($assets_prefix)) {
+    $current_path = $_SERVER['SCRIPT_NAME'] ?? '';
+    $is_in_pages = strpos($current_path, '/pages/') !== false;
+    $assets_prefix = $is_in_pages ? '../' : './';
+}
+?>
 <!-- Footer -->
     <footer class="bg-dark text-white mt-5 py-4">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
                     <div class="d-flex align-items-center justify-content-center justify-content-md-start">
-                        <img src="../assets/img/logo.png" alt="BTIKP Logo" style="height: 40px; margin-right: 15px;">
+                        <img src="<?= $assets_prefix ?>assets/img/logo.png" alt="BTIKP Logo" style="height: 40px; margin-right: 15px;">
                         <div>
                             <h5 class="mb-0" style="font-weight: 600; letter-spacing: 0.5px;">BTIKP</h5>
                             <p class="mb-0" style="font-size: 0.85rem; opacity: 0.8;">Balai Teknologi Informasi dan Komunikasi Pendidikan</p>
@@ -40,7 +48,7 @@
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Custom JavaScript (Sudah include modal handlers) -->
-<script src="../assets/js/script.js"></script>
+<!-- Custom JavaScript -->
+<script src="<?= $assets_prefix ?>assets/js/script.js"></script>
 </body>
 </html>
