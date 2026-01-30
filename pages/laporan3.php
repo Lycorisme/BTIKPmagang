@@ -7,99 +7,124 @@ include '../includes/auth.php';
 checkLogin();
 checkRole(['admin']);
 
-// Ambil data lowongan dengan statistik lamaran
-$query = "SELECT l.*, u.nama as nama_mentor,
-          (SELECT COUNT(*) FROM lamaran WHERE lowongan_id = l.id) as total_pelamar,
-          (SELECT COUNT(*) FROM lamaran WHERE lowongan_id = l.id AND status = 'diterima') as total_diterima
-          FROM lowongan l 
-          JOIN users u ON l.mentor_id = u.id 
-          ORDER BY l.id DESC";
+// Ambil data absensi
+$query = "SELECT a.*, u.nama 
+          FROM absensi a 
+          JOIN users u ON a.user_id = u.id 
+          WHERE u.role = 'peserta_magang'
+          ORDER BY a.tanggal DESC, a.jam_masuk DESC";
 $result = mysqli_query($conn, $query);
+
+// Statistik Hari Ini
+$today = date('Y-m-d');
+$query_today = "SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'hadir' THEN 1 ELSE 0 END) as hadir,
+                SUM(CASE WHEN status = 'izin' THEN 1 ELSE 0 END) as izin,
+                SUM(CASE WHEN status = 'sakit' THEN 1 ELSE 0 END) as sakit,
+                SUM(CASE WHEN status = 'alpha' THEN 1 ELSE 0 END) as alpha
+                FROM absensi WHERE tanggal = '$today'";
+$stats_today = mysqli_fetch_assoc(mysqli_query($conn, $query_today));
 ?>
 
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-file-earmark-bar-graph"></i> Laporan Lowongan Magang</h2>
+        <h2><i class="bi bi-calendar-check"></i> Laporan Absensi Peserta</h2>
         <button onclick="window.print()" class="btn btn-primary">
             <i class="bi bi-printer"></i> Cetak Laporan
         </button>
     </div>
     
+    <!-- Statistik Hari Ini -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3><?= $stats_today['hadir'] ?? 0 ?></h3>
+                    <p class="mb-0">Hadir Hari Ini</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3><?= $stats_today['izin'] ?? 0 ?></h3>
+                    <p class="mb-0">Izin Hari Ini</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3><?= $stats_today['sakit'] ?? 0 ?></h3>
+                    <p class="mb-0">Sakit Hari Ini</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h3><?= $stats_today['alpha'] ?? 0 ?></h3>
+                    <p class="mb-0">Alpha Hari Ini</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-header bg-info text-white">
-            <h5 class="mb-0">Rekap Lowongan Magang & Pelamar</h5>
+            <h5 class="mb-0">Rekap Data Absensi</h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered">
+                <table class="table table-bordered table-sm">
                     <thead class="table-light">
                         <tr>
                             <th>No</th>
-                            <th>Judul Lowongan</th>
-                            <th>Mentor</th>
-                            <th>Periode</th>
+                            <th>Tanggal</th>
+                            <th>Nama Peserta</th>
+                            <th>Jam Masuk</th>
+                            <th>Jam Keluar</th>
                             <th>Status</th>
-                            <th>Total Pelamar</th>
-                            <th>Diterima</th>
+                            <th>Keterangan</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php 
                         $no = 1;
-                        $total_lowongan = 0;
-                        $total_pelamar_all = 0;
-                        $total_diterima_all = 0;
-                        while ($row = mysqli_fetch_assoc($result)): 
-                            $total_lowongan++;
-                            $total_pelamar_all += $row['total_pelamar'];
-                            $total_diterima_all += $row['total_diterima'];
+                        if(mysqli_num_rows($result) > 0):
+                            while ($row = mysqli_fetch_assoc($result)): 
                         ?>
                         <tr>
                             <td><?= $no++ ?></td>
-                            <td>
-                                <strong><?= $row['judul'] ?></strong><br>
-                                <small class="text-muted"><?= substr($row['deskripsi'], 0, 80) ?>...</small>
-                            </td>
-                            <td><?= $row['nama_mentor'] ?></td>
-                            <td>
-                                <?= date('d/m/Y', strtotime($row['tgl_mulai'])) ?><br>
-                                s/d<br>
-                                <?= date('d/m/Y', strtotime($row['tgl_selesai'])) ?>
-                            </td>
-                            <td>
-                                <?php if ($row['status'] == 'open'): ?>
-                                    <span class="badge bg-success">Open</span>
-                                <?php else: ?>
-                                    <span class="badge bg-secondary">Closed</span>
-                                <?php endif; ?>
-                            </td>
+                            <td><?= date('d/m/Y', strtotime($row['tanggal'])) ?></td>
+                            <td><?= $row['nama'] ?></td>
+                            <td><?= $row['jam_masuk'] ? date('H:i', strtotime($row['jam_masuk'])) : '-' ?></td>
+                            <td><?= $row['jam_keluar'] ? date('H:i', strtotime($row['jam_keluar'])) : '-' ?></td>
                             <td class="text-center">
-                                <span class="badge bg-primary"><?= $row['total_pelamar'] ?></span>
+                                <?php
+                                $badge_color = 'secondary';
+                                switch($row['status']) {
+                                    case 'hadir': $badge_color = 'success'; break;
+                                    case 'izin': $badge_color = 'warning'; break;
+                                    case 'sakit': $badge_color = 'info'; break;
+                                    case 'alpha': $badge_color = 'danger'; break;
+                                }
+                                ?>
+                                <span class="badge bg-<?= $badge_color ?>"><?= ucfirst($row['status']) ?></span>
                             </td>
-                            <td class="text-center">
-                                <span class="badge bg-success"><?= $row['total_diterima'] ?></span>
-                            </td>
+                            <td><?= $row['keterangan'] ?? '-' ?></td>
                         </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                    <tfoot class="table-light">
+                        <?php 
+                            endwhile;
+                        else:
+                        ?>
                         <tr>
-                            <th colspan="5">TOTAL</th>
-                            <th class="text-center"><?= $total_pelamar_all ?></th>
-                            <th class="text-center"><?= $total_diterima_all ?></th>
+                            <td colspan="7" class="text-center">Belum ada data absensi</td>
                         </tr>
-                    </tfoot>
+                        <?php endif; ?>
+                    </tbody>
                 </table>
-            </div>
-            
-            <div class="mt-4">
-                <h6>Ringkasan:</h6>
-                <ul>
-                    <li>Total Lowongan: <strong><?= $total_lowongan ?></strong></li>
-                    <li>Total Pelamar: <strong><?= $total_pelamar_all ?></strong></li>
-                    <li>Total yang Diterima: <strong><?= $total_diterima_all ?></strong></li>
-                    <li>Rata-rata Pelamar per Lowongan: <strong><?= $total_lowongan > 0 ? round($total_pelamar_all / $total_lowongan, 2) : 0 ?></strong></li>
-                </ul>
             </div>
         </div>
         <div class="card-footer text-muted">

@@ -7,20 +7,20 @@ include '../includes/auth.php';
 checkLogin();
 checkRole(['admin']);
 
-// Ambil data mahasiswa dengan statistik lamaran
-$query = "SELECT u.*, 
-          (SELECT COUNT(*) FROM lamaran WHERE user_id = u.id) as total_lamaran,
-          (SELECT COUNT(*) FROM lamaran WHERE user_id = u.id AND status = 'diterima') as lamaran_diterima,
-          (SELECT COUNT(*) FROM lamaran WHERE user_id = u.id AND status = 'ditolak') as lamaran_ditolak
+// Ambil data peserta magang dengan detail institusi
+$query = "SELECT u.*, pm.nama_instansi, pm.jurusan, pm.jenis_instansi,
+          (SELECT COUNT(*) FROM absensi a WHERE a.user_id = u.id AND a.status = 'hadir') as total_hadir,
+          (SELECT COUNT(*) FROM jurnal j WHERE j.user_id = u.id) as total_jurnal
           FROM users u 
-          WHERE u.role = 'mahasiswa' 
+          LEFT JOIN peserta_magang pm ON u.id = pm.user_id
+          WHERE u.role = 'peserta_magang' 
           ORDER BY u.id DESC";
 $result = mysqli_query($conn, $query);
 ?>
 
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-file-earmark-bar-graph"></i> Laporan Data Mahasiswa</h2>
+        <h2><i class="bi bi-people"></i> Laporan Peserta Magang</h2>
         <button onclick="window.print()" class="btn btn-primary">
             <i class="bi bi-printer"></i> Cetak Laporan
         </button>
@@ -28,76 +28,65 @@ $result = mysqli_query($conn, $query);
     
     <div class="card">
         <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Rekap Data Mahasiswa & Aktivitas Magang</h5>
+            <h5 class="mb-0">Data Lengkap Peserta Magang</h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered">
+                <table class="table table-bordered table-striped">
                     <thead class="table-light">
                         <tr>
                             <th>No</th>
-                            <th>Nama Mahasiswa</th>
-                            <th>Email</th>
-                            <th>Terdaftar</th>
-                            <th>Total Lamaran</th>
-                            <th>Diterima</th>
-                            <th>Ditolak</th>
-                            <th>Status</th>
+                            <th>Nama Peserta</th>
+                            <th>Info Kontak</th>
+                            <th>Institusi Update</th>
+                            <th>Asal Instansi</th>
+                            <th>Statistik</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php 
                         $no = 1;
-                        $total_mahasiswa = 0;
-                        $total_lamaran_all = 0;
-                        $total_diterima_all = 0;
-                        while ($row = mysqli_fetch_assoc($result)): 
-                            $total_mahasiswa++;
-                            $total_lamaran_all += $row['total_lamaran'];
-                            $total_diterima_all += $row['lamaran_diterima'];
+                        if(mysqli_num_rows($result) > 0):
+                            while ($row = mysqli_fetch_assoc($result)): 
                         ?>
                         <tr>
                             <td><?= $no++ ?></td>
-                            <td><?= $row['nama'] ?></td>
-                            <td><?= $row['email'] ?></td>
-                            <td><?= date('d/m/Y', strtotime($row['created_at'])) ?></td>
-                            <td class="text-center"><?= $row['total_lamaran'] ?></td>
-                            <td class="text-center">
-                                <span class="badge bg-success"><?= $row['lamaran_diterima'] ?></span>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge bg-danger"><?= $row['lamaran_ditolak'] ?></span>
+                            <td>
+                                <strong><?= $row['nama'] ?></strong><br>
+                                <small class="text-muted">ID: <?= $row['id'] ?></small>
                             </td>
                             <td>
-                                <?php if ($row['lamaran_diterima'] > 0): ?>
-                                    <span class="badge bg-success">Aktif Magang</span>
-                                <?php elseif ($row['total_lamaran'] > 0): ?>
-                                    <span class="badge bg-warning text-dark">Sudah Melamar</span>
-                                <?php else: ?>
-                                    <span class="badge bg-secondary">Belum Melamar</span>
-                                <?php endif; ?>
+                                <i class="bi bi-envelope"></i> <?= $row['email'] ?>
+                            </td>
+                            <td>
+                                <?= date('d/m/Y', strtotime($row['created_at'])) ?>
+                            </td>
+                            <td>
+                                <strong><?= $row['nama_instansi'] ?? '-' ?></strong><br>
+                                <small class="text-muted">
+                                    <?= $row['jurusan'] ?? '-' ?> 
+                                    (<?= $row['jenis_instansi'] ?? '-' ?>)
+                                </small>
+                            </td>
+                            <td>
+                                <span class="badge bg-success" title="Total Hadir">Hadir: <?= $row['total_hadir'] ?></span>
+                                <span class="badge bg-info" title="Total Jurnal">Jurnal: <?= $row['total_jurnal'] ?></span>
                             </td>
                         </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                    <tfoot class="table-light">
+                        <?php 
+                            endwhile;
+                        else:
+                        ?>
                         <tr>
-                            <th colspan="4">TOTAL</th>
-                            <th class="text-center"><?= $total_lamaran_all ?></th>
-                            <th class="text-center"><?= $total_diterima_all ?></th>
-                            <th colspan="2"></th>
+                            <td colspan="6" class="text-center">Tidak ada data peserta magang</td>
                         </tr>
-                    </tfoot>
+                        <?php endif; ?>
+                    </tbody>
                 </table>
             </div>
             
             <div class="mt-4">
-                <h6>Ringkasan:</h6>
-                <ul>
-                    <li>Total Mahasiswa Terdaftar: <strong><?= $total_mahasiswa ?></strong></li>
-                    <li>Total Lamaran Diajukan: <strong><?= $total_lamaran_all ?></strong></li>
-                    <li>Total Mahasiswa Diterima Magang: <strong><?= $total_diterima_all ?></strong></li>
-                </ul>
+                <h6>Total Peserta: <?= mysqli_num_rows($result) ?></h6>
             </div>
         </div>
         <div class="card-footer text-muted">

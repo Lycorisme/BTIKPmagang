@@ -164,12 +164,12 @@ $absensi_today = mysqli_fetch_assoc($result_absensi_today);
         </div>
         
         <div class="col-md-3">
-            <div class="card bg-<?= $sertifikat ? 'info' : 'secondary' ?> text-white h-100">
+            <div class="card bg-<?= $magang_selesai ? 'info' : 'secondary' ?> text-white h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-title mb-0">Sertifikat</h6>
-                            <h5 class="mt-2 mb-0"><?= $sertifikat ? 'Tersedia' : 'Belum' ?></h5>
+                            <h5 class="mt-2 mb-0"><?= $magang_selesai ? 'Tersedia' : 'Belum' ?></h5>
                         </div>
                         <i class="bi bi-award display-4"></i>
                     </div>
@@ -222,17 +222,11 @@ $absensi_today = mysqli_fetch_assoc($result_absensi_today);
                             </a>
                         </div>
                         
-                        <?php if ($magang_selesai && $sertifikat): ?>
+                        <?php if ($magang_selesai): ?>
                         <div class="col-md-3">
-                            <a href="cetak_sertifikat.php" class="btn btn-outline-info w-100 py-3">
+                            <a href="cetak_sertifikat.php?id=<?= $pendaftaran['id'] ?>" class="btn btn-outline-info w-100 py-3" target="_blank">
                                 <i class="bi bi-award display-6"></i><br>Cetak Sertifikat
                             </a>
-                        </div>
-                        <?php elseif ($magang_selesai && !$sertifikat): ?>
-                        <div class="col-md-3">
-                            <button class="btn btn-outline-secondary w-100 py-3" disabled>
-                                <i class="bi bi-clock display-6"></i><br>Sertifikat Diproses
-                            </button>
                         </div>
                         <?php endif; ?>
                     </div>
