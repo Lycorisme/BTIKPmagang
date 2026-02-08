@@ -30,9 +30,14 @@ $rata_nilai = $mata_nilai_res ? mysqli_fetch_assoc($mata_nilai_res)['rata'] : 0;
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-journal-text"></i> Laporan Aktivitas Jurnal</h2>
-        <button onclick="window.print()" class="btn btn-primary">
-            <i class="bi bi-printer"></i> Cetak Laporan
-        </button>
+        <div class="btn-group">
+            <a href="../process/export_pdf.php?type=laporan4" class="btn btn-danger">
+                <i class="bi bi-file-pdf"></i> Download PDF
+            </a>
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="bi bi-printer"></i> Cetak Laporan
+            </button>
+        </div>
     </div>
     
     <!-- Statistik Cards -->

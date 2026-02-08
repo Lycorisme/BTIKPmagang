@@ -1,14 +1,13 @@
 <?php
 session_start();
 require_once '../config/database.php';
-include '../includes/header.php';
-include '../includes/auth.php';
 
-checkLogin();
-checkRole(['admin']);
-
-// Process update status pendaftaran
+// Process update status pendaftaran (BEFORE any output)
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    require_once '../includes/auth.php';
+    checkLogin();
+    checkRole(['admin']);
+    
     $action = $_POST['action'] ?? '';
     $pendaftaran_id = intval($_POST['pendaftaran_id'] ?? 0);
     
@@ -32,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
         
-        echo "<script>Swal.fire({icon:'success',title:'Berhasil!',text:'Peserta magang berhasil diterima'}).then(()=>location.reload());</script>";
+        $_SESSION['flash_message'] = ['type' => 'success', 'title' => 'Berhasil!', 'text' => 'Peserta magang berhasil diterima'];
     } elseif ($action == 'tolak' && $pendaftaran_id > 0) {
         $catatan = mysqli_real_escape_string($conn, $_POST['catatan'] ?? '');
         
@@ -42,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
         
-        echo "<script>Swal.fire({icon:'info',title:'Berhasil!',text:'Pendaftaran telah ditolak'}).then(()=>location.reload());</script>";
+        $_SESSION['flash_message'] = ['type' => 'info', 'title' => 'Berhasil!', 'text' => 'Pendaftaran telah ditolak'];
     } elseif ($action == 'selesaikan' && $pendaftaran_id > 0) {
         $tgl_selesai_aktual = date('Y-m-d');
         
@@ -52,9 +51,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
         
-        echo "<script>Swal.fire({icon:'success',title:'Berhasil!',text:'Masa magang telah selesai'}).then(()=>location.reload());</script>";
+        $_SESSION['flash_message'] = ['type' => 'success', 'title' => 'Berhasil!', 'text' => 'Masa magang telah selesai'];
     }
+    
+    // POST-Redirect-GET Pattern - Redirect to prevent double POST on refresh
+    header('Location: kelola_pendaftaran.php' . (isset($_GET['status']) ? '?status=' . $_GET['status'] : ''));
+    exit;
 }
+
+include '../includes/header.php';
+include '../includes/auth.php';
+
+checkLogin();
+checkRole(['admin']);
 
 // Filter status
 $status_filter = $_GET['status'] ?? 'all';
@@ -337,4 +346,20 @@ $result_mentor = mysqli_query($conn, $query_mentor);
     </div>
 </div>
 
+<?php 
+// Display flash message if exist
+if (isset($_SESSION['flash_message'])) {
+    $flash = $_SESSION['flash_message'];
+    unset($_SESSION['flash_message']);
+    echo "<script>
+        Swal.fire({
+            icon: '{$flash['type']}',
+            title: '{$flash['title']}',
+            text: '{$flash['text']}'
+        });
+    </script>";
+}
+?>
+
 <?php include '../includes/footer.php'; ?>
+
