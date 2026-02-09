@@ -1,0 +1,5 @@
+# Ignore log files in tmp folder
+*.log
+
+# Keep this file
+!.gitignore

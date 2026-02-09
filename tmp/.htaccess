@@ -1,0 +1,11 @@
+# Deny access to log files
+<Files "*.log">
+    Order deny,allow
+    Deny from all
+</Files>
+
+# Allow font cache files
+<Files "*.font">
+    Order allow,deny
+    Allow from all
+</Files>

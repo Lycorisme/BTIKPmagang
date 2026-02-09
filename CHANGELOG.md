@@ -2,6 +2,35 @@
 
 Semua perubahan penting pada project ini akan didokumentasikan di file ini.
 
+## [1.0.1] - 2026-02-09
+
+### 🐛 Bug Fixes
+
+#### PDF Export Fix untuk Free Hosting
+- ✅ Fixed HTTP ERROR 500 saat download PDF pada hosting gratis (InfinityFree, dll)
+- ✅ Improved error handling dengan custom error/exception handlers
+- ✅ Added memory optimization untuk DOMPDF
+- ✅ Created fallback print_report.php sebagai alternatif yang 100% bekerja di semua hosting
+- ✅ Updated semua halaman laporan dengan tombol "Cetak Laporan" yang mengarah ke print version
+
+#### File yang Dimodifikasi/Ditambahkan
+- `includes/pdf_helper.php` - Error handling & memory optimization
+- `process/export_pdf.php` - Comprehensive error handling dengan shutdown handler
+- `process/print_report.php` - **NEW** Alternatif print yang bekerja di semua hosting
+- `pages/laporan1.php` - Updated button links
+- `pages/laporan2.php` - Updated button links
+- `pages/laporan3.php` - Updated button links
+- `pages/laporan4.php` - Updated button links
+- `pages/laporan5.php` - Updated button links
+- `tmp/.htaccess` - **NEW** Security untuk log files
+- `tmp/.gitignore` - **NEW** Ignore log files
+
+#### Cara Penggunaan
+- **Download PDF**: Klik tombol merah "Download PDF" (jika server mendukung)
+- **Cetak Laporan**: Klik tombol biru "Cetak Laporan" → akan terbuka halaman cetak → klik tombol print → pilih "Save as PDF" untuk menyimpan sebagai file PDF
+
+---
+
 ## [1.0.0] - 2025-01-17
 
 ### 🎉 Initial Release

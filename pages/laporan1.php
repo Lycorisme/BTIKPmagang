@@ -22,12 +22,12 @@ $result = mysqli_query($conn, $query);
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-people"></i> Laporan Peserta Magang</h2>
         <div class="btn-group">
-            <a href="../process/export_pdf.php?type=laporan1" class="btn btn-danger">
+            <a href="../process/export_pdf.php?type=laporan1" class="btn btn-danger" title="Download langsung sebagai PDF">
                 <i class="bi bi-file-pdf"></i> Download PDF
             </a>
-            <button onclick="window.print()" class="btn btn-primary">
+            <a href="../process/print_report.php?type=laporan1" class="btn btn-primary" target="_blank" title="Buka halaman cetak (alternatif jika download gagal)">
                 <i class="bi bi-printer"></i> Cetak Laporan
-            </button>
+            </a>
         </div>
     </div>
     

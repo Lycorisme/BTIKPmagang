@@ -1,20 +1,113 @@
 <?php
+/**
+ * Export PDF - Optimized for Free Hosting
+ * With comprehensive error handling
+ */
+
+// Error handling untuk hosting gratis
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
+// Set limits (mungkin diabaikan oleh hosting, tapi coba)
+@ini_set('memory_limit', '256M');
+@set_time_limit(120);
+
+// Start output buffering untuk error handling
+ob_start();
+
+// Custom error handler
+function pdfErrorHandler($errno, $errstr, $errfile, $errline) {
+    $errorLog = dirname(__DIR__) . '/tmp/pdf_error.log';
+    $message = date('Y-m-d H:i:s') . " - Error [$errno]: $errstr in $errfile on line $errline\n";
+    @file_put_contents($errorLog, $message, FILE_APPEND);
+    return false;
+}
+set_error_handler('pdfErrorHandler');
+
+// Custom exception handler
+function pdfExceptionHandler($e) {
+    ob_end_clean();
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<!DOCTYPE html><html><head><title>Error PDF</title>';
+    echo '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">';
+    echo '</head><body class="bg-light"><div class="container mt-5">';
+    echo '<div class="alert alert-danger">';
+    echo '<h4>⚠️ Gagal Generate PDF</h4>';
+    echo '<p>Server tidak dapat memproses permintaan PDF saat ini.</p>';
+    echo '<hr><p class="mb-0"><small>Detail: ' . htmlspecialchars($e->getMessage()) . '</small></p>';
+    echo '</div>';
+    echo '<a href="javascript:history.back()" class="btn btn-primary">← Kembali</a>';
+    echo '</div></body></html>';
+    exit();
+}
+set_exception_handler('pdfExceptionHandler');
+
+// Shutdown handler untuk fatal errors
+function pdfShutdownHandler() {
+    $error = error_get_last();
+    if ($error && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE])) {
+        ob_end_clean();
+        header('Content-Type: text/html; charset=utf-8');
+        echo '<!DOCTYPE html><html><head><title>Error PDF</title>';
+        echo '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">';
+        echo '</head><body class="bg-light"><div class="container mt-5">';
+        echo '<div class="alert alert-warning">';
+        echo '<h4>⚠️ Server Error</h4>';
+        echo '<p>Terjadi kesalahan server saat generate PDF. Kemungkinan penyebab:</p>';
+        echo '<ul>';
+        echo '<li>Memory limit hosting terlalu rendah</li>';
+        echo '<li>Execution time limit tercapai</li>';
+        echo '<li>Library DOMPDF membutuhkan resource lebih besar</li>';
+        echo '</ul>';
+        echo '<p><strong>Solusi:</strong> Gunakan tombol "Cetak Laporan" untuk print langsung dari browser.</p>';
+        echo '</div>';
+        echo '<a href="javascript:history.back()" class="btn btn-primary">← Kembali</a>';
+        echo '</div></body></html>';
+    }
+}
+register_shutdown_function('pdfShutdownHandler');
+
 session_start();
-require_once '../config/database.php';
-require_once '../includes/auth.php';
-require_once '../includes/pdf_helper.php';
+
+// Check required files exist
+$configPath = '../config/database.php';
+$authPath = '../includes/auth.php';
+$pdfHelperPath = '../includes/pdf_helper.php';
+
+if (!file_exists($configPath)) {
+    throw new Exception('Database config not found');
+}
+if (!file_exists($authPath)) {
+    throw new Exception('Auth helper not found');
+}
+if (!file_exists($pdfHelperPath)) {
+    throw new Exception('PDF helper not found');
+}
+
+require_once $configPath;
+require_once $authPath;
+require_once $pdfHelperPath;
 
 checkLogin();
 checkRole(['admin']);
 
 $report_type = $_GET['type'] ?? '';
 
-// Get site settings for header
-$settings_query = "SELECT * FROM settings WHERE id = 1";
-$settings_result = mysqli_query($conn, $settings_query);
-$settings = mysqli_fetch_assoc($settings_result);
-$site_name = $settings['site_name'] ?? 'Sistem Magang';
-$logo_path = '../assets/uploads/' . ($settings['logo'] ?? 'logo.png');
+// Get site settings for header (dengan fallback jika tabel tidak ada)
+$site_name = 'Sistem Magang';
+$logo_path = '../assets/img/logo.png';
+
+// Cek apakah tabel settings ada
+$check_table = @mysqli_query($conn, "SHOW TABLES LIKE 'settings'");
+if ($check_table && mysqli_num_rows($check_table) > 0) {
+    $settings_query = "SELECT * FROM settings WHERE id = 1";
+    $settings_result = @mysqli_query($conn, $settings_query);
+    if ($settings_result && $settings = mysqli_fetch_assoc($settings_result)) {
+        $site_name = $settings['site_name'] ?? 'Sistem Magang';
+        $logo_path = '../assets/uploads/' . ($settings['logo'] ?? 'logo.png');
+    }
+}
 
 // Common PDF Header styles
 $pdf_styles = '
@@ -114,15 +207,20 @@ switch ($report_type) {
     case 'laporan2':
         // Laporan Data Mentor
         $query = "SELECT u.*, m.keahlian, m.status_open,
-                  (SELECT COUNT(*) FROM lowongan WHERE mentor_id = u.id) as total_lowongan,
-                  (SELECT COUNT(*) FROM lowongan WHERE mentor_id = u.id AND status = 'open') as lowongan_aktif,
-                  (SELECT COUNT(*) FROM lamaran WHERE mentor_id = u.id) as total_lamaran,
-                  (SELECT COUNT(*) FROM lamaran WHERE mentor_id = u.id AND status = 'diterima') as total_pemagang
+                  (SELECT COUNT(*) FROM pendaftaran_magang pm WHERE pm.mentor_id = u.id) as total_bimbingan,
+                  (SELECT COUNT(*) FROM pendaftaran_magang pm WHERE pm.mentor_id = u.id AND pm.status = 'diterima') as bimbingan_aktif,
+                  (SELECT COUNT(*) FROM pendaftaran_magang pm WHERE pm.mentor_id = u.id AND pm.status = 'selesai') as bimbingan_selesai
                   FROM users u 
-                  JOIN mentors m ON u.id = m.user_id 
+                  LEFT JOIN mentors m ON u.id = m.user_id 
                   WHERE u.role = 'mentor' 
                   ORDER BY u.id DESC";
         $result = mysqli_query($conn, $query);
+        
+        // Fallback jika query gagal
+        if (!$result) {
+            $query = "SELECT * FROM users WHERE role = 'mentor' ORDER BY id DESC";
+            $result = mysqli_query($conn, $query);
+        }
         
         $html = '<!DOCTYPE html><html><head>' . $pdf_styles . '</head><body>';
         $html .= getPdfHeader('Laporan Data Mentor', $site_name);
@@ -134,33 +232,33 @@ switch ($report_type) {
                     <th>Email</th>
                     <th>Keahlian</th>
                     <th>Status</th>
-                    <th>Lowongan</th>
+                    <th>Total Bimbingan</th>
                     <th>Aktif</th>
-                    <th>Pemagang</th>
+                    <th>Selesai</th>
                 </tr>
             </thead>
             <tbody>';
         
         $no = 1;
         $total_mentor = 0;
-        $total_lowongan_all = 0;
-        $total_pemagang_all = 0;
+        $total_bimbingan_all = 0;
+        $total_selesai_all = 0;
         
         while ($row = mysqli_fetch_assoc($result)) {
             $total_mentor++;
-            $total_lowongan_all += $row['total_lowongan'];
-            $total_pemagang_all += $row['total_pemagang'];
-            $status_badge = $row['status_open'] ? '<span class="badge badge-success">Menerima</span>' : '<span class="badge badge-warning">Tutup</span>';
+            $total_bimbingan_all += $row['total_bimbingan'] ?? 0;
+            $total_selesai_all += $row['bimbingan_selesai'] ?? 0;
+            $status_badge = (isset($row['status_open']) && $row['status_open']) ? '<span class="badge badge-success">Menerima</span>' : '<span class="badge badge-warning">Tutup</span>';
             
             $html .= '<tr>
                 <td>' . $no++ . '</td>
                 <td>' . htmlspecialchars($row['nama']) . '</td>
                 <td>' . htmlspecialchars($row['email']) . '</td>
-                <td>' . htmlspecialchars($row['keahlian']) . '</td>
+                <td>' . htmlspecialchars($row['keahlian'] ?? '-') . '</td>
                 <td class="text-center">' . $status_badge . '</td>
-                <td class="text-center">' . $row['total_lowongan'] . '</td>
-                <td class="text-center">' . $row['lowongan_aktif'] . '</td>
-                <td class="text-center">' . $row['total_pemagang'] . '</td>
+                <td class="text-center">' . ($row['total_bimbingan'] ?? 0) . '</td>
+                <td class="text-center">' . ($row['bimbingan_aktif'] ?? 0) . '</td>
+                <td class="text-center">' . ($row['bimbingan_selesai'] ?? 0) . '</td>
             </tr>';
         }
         
@@ -169,8 +267,8 @@ switch ($report_type) {
             <h4>Ringkasan:</h4>
             <ul>
                 <li>Total Mentor Terdaftar: <strong>' . $total_mentor . '</strong></li>
-                <li>Total Lowongan Dibuat: <strong>' . $total_lowongan_all . '</strong></li>
-                <li>Total Pemagang Aktif: <strong>' . $total_pemagang_all . '</strong></li>
+                <li>Total Bimbingan: <strong>' . $total_bimbingan_all . '</strong></li>
+                <li>Total Bimbingan Selesai: <strong>' . $total_selesai_all . '</strong></li>
             </ul>
         </div>';
         $html .= $pdf_footer . '</body></html>';

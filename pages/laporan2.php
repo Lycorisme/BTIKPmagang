@@ -7,31 +7,46 @@ include '../includes/auth.php';
 checkLogin();
 checkRole(['admin']);
 
-// Ambil data mentor dengan statistik
-$query = "SELECT u.*, m.keahlian, m.status_open,
-          (SELECT COUNT(*) FROM lowongan WHERE mentor_id = u.id) as total_lowongan,
-          (SELECT COUNT(*) FROM lowongan WHERE mentor_id = u.id AND status = 'open') as lowongan_aktif,
-          (SELECT COUNT(*) FROM lamaran WHERE mentor_id = u.id) as total_lamaran,
-          (SELECT COUNT(*) FROM lamaran WHERE mentor_id = u.id AND status = 'diterima') as total_pemagang
+// Ambil data mentor dengan statistik (menggunakan tabel yang ada)
+$query = "SELECT u.*, m.keahlian, m.bio, m.status_open,
+          (SELECT COUNT(*) FROM pendaftaran_magang pm WHERE pm.mentor_id = u.id) as total_bimbingan,
+          (SELECT COUNT(*) FROM pendaftaran_magang pm WHERE pm.mentor_id = u.id AND pm.status = 'diterima') as bimbingan_aktif,
+          (SELECT COUNT(*) FROM pendaftaran_magang pm WHERE pm.mentor_id = u.id AND pm.status = 'selesai') as bimbingan_selesai
           FROM users u 
-          JOIN mentors m ON u.id = m.user_id 
+          LEFT JOIN mentors m ON u.id = m.user_id 
           WHERE u.role = 'mentor' 
           ORDER BY u.id DESC";
 $result = mysqli_query($conn, $query);
+
+// Error handling - cek apakah query berhasil
+if (!$result) {
+    // Fallback: query sederhana jika tabel mentors tidak ada
+    $query_simple = "SELECT * FROM users WHERE role = 'mentor' ORDER BY id DESC";
+    $result = mysqli_query($conn, $query_simple);
+    $is_simple_mode = true;
+} else {
+    $is_simple_mode = false;
+}
 ?>
 
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-file-earmark-bar-graph"></i> Laporan Data Mentor</h2>
         <div class="btn-group">
-            <a href="../process/export_pdf.php?type=laporan2" class="btn btn-danger">
+            <a href="../process/export_pdf.php?type=laporan2" class="btn btn-danger" title="Download langsung sebagai PDF">
                 <i class="bi bi-file-pdf"></i> Download PDF
             </a>
-            <button onclick="window.print()" class="btn btn-primary">
+            <a href="../process/print_report.php?type=laporan2" class="btn btn-primary" target="_blank" title="Buka halaman cetak (alternatif jika download gagal)">
                 <i class="bi bi-printer"></i> Cetak Laporan
-            </button>
+            </a>
         </div>
     </div>
+    
+    <?php if (!$result || mysqli_num_rows($result) == 0): ?>
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Belum ada data mentor terdaftar.
+    </div>
+    <?php else: ?>
     
     <div class="card">
         <div class="card-header bg-success text-white">
@@ -46,44 +61,42 @@ $result = mysqli_query($conn, $query);
                             <th>Nama Mentor</th>
                             <th>Keahlian</th>
                             <th>Status</th>
-                            <th>Total Lowongan</th>
-                            <th>Lowongan Aktif</th>
-                            <th>Total Lamaran</th>
-                            <th>Total Pemagang</th>
+                            <th>Total Bimbingan</th>
+                            <th>Aktif</th>
+                            <th>Selesai</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php 
                         $no = 1;
                         $total_mentor = 0;
-                        $total_lowongan_all = 0;
-                        $total_pemagang_all = 0;
+                        $total_bimbingan_all = 0;
+                        $total_selesai_all = 0;
                         while ($row = mysqli_fetch_assoc($result)): 
                             $total_mentor++;
-                            $total_lowongan_all += $row['total_lowongan'];
-                            $total_pemagang_all += $row['total_pemagang'];
+                            $total_bimbingan_all += $row['total_bimbingan'] ?? 0;
+                            $total_selesai_all += $row['bimbingan_selesai'] ?? 0;
                         ?>
                         <tr>
                             <td><?= $no++ ?></td>
                             <td>
-                                <?= $row['nama'] ?><br>
-                                <small class="text-muted"><?= $row['email'] ?></small>
+                                <?= htmlspecialchars($row['nama']) ?><br>
+                                <small class="text-muted"><?= htmlspecialchars($row['email']) ?></small>
                             </td>
-                            <td><?= $row['keahlian'] ?></td>
+                            <td><?= htmlspecialchars($row['keahlian'] ?? '-') ?></td>
                             <td>
-                                <?php if ($row['status_open']): ?>
+                                <?php if (isset($row['status_open']) && $row['status_open']): ?>
                                     <span class="badge bg-success">Menerima</span>
                                 <?php else: ?>
                                     <span class="badge bg-secondary">Tutup</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="text-center"><?= $row['total_lowongan'] ?></td>
+                            <td class="text-center"><?= $row['total_bimbingan'] ?? 0 ?></td>
                             <td class="text-center">
-                                <span class="badge bg-info"><?= $row['lowongan_aktif'] ?></span>
+                                <span class="badge bg-info"><?= $row['bimbingan_aktif'] ?? 0 ?></span>
                             </td>
-                            <td class="text-center"><?= $row['total_lamaran'] ?></td>
                             <td class="text-center">
-                                <span class="badge bg-success"><?= $row['total_pemagang'] ?></span>
+                                <span class="badge bg-success"><?= $row['bimbingan_selesai'] ?? 0 ?></span>
                             </td>
                         </tr>
                         <?php endwhile; ?>
@@ -91,9 +104,9 @@ $result = mysqli_query($conn, $query);
                     <tfoot class="table-light">
                         <tr>
                             <th colspan="4">TOTAL</th>
-                            <th class="text-center"><?= $total_lowongan_all ?></th>
-                            <th colspan="2"></th>
-                            <th class="text-center"><?= $total_pemagang_all ?></th>
+                            <th class="text-center"><?= $total_bimbingan_all ?></th>
+                            <th></th>
+                            <th class="text-center"><?= $total_selesai_all ?></th>
                         </tr>
                     </tfoot>
                 </table>
@@ -103,8 +116,8 @@ $result = mysqli_query($conn, $query);
                 <h6>Ringkasan:</h6>
                 <ul>
                     <li>Total Mentor Terdaftar: <strong><?= $total_mentor ?></strong></li>
-                    <li>Total Lowongan Dibuat: <strong><?= $total_lowongan_all ?></strong></li>
-                    <li>Total Pemagang Aktif: <strong><?= $total_pemagang_all ?></strong></li>
+                    <li>Total Bimbingan: <strong><?= $total_bimbingan_all ?></strong></li>
+                    <li>Total Bimbingan Selesai: <strong><?= $total_selesai_all ?></strong></li>
                 </ul>
             </div>
         </div>
@@ -112,6 +125,7 @@ $result = mysqli_query($conn, $query);
             Dicetak pada: <?= date('d F Y H:i:s') ?>
         </div>
     </div>
+    <?php endif; ?>
 </div>
 
 <?php include '../includes/footer.php'; ?>
